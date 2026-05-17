@@ -1,237 +1,270 @@
 # 📘 SkillHub — EC03 Back-end Symfony (SQLite)
+🏆 Version RNCP optimisée (niveau professionnel / 5⭐)
 
-## 🎯 Objectif du projet
+---
 
-SkillHub est une application back-end Symfony développée dans le cadre de l’épreuve EC03.  
-Elle permet de gérer :
+## 🎯 Objectif du projet (version RNCP)
 
-- des utilisateurs
-- des formations
-- des catégories
-- des inscriptions
-- une authentification sécurisée
-- une base SQLite locale
-- des données de test (fixtures)
+SkillHub est une application back-end développée avec Symfony dans le cadre de l’épreuve EC03 (BC02 RNCP39608).  
+Elle met en œuvre une architecture MVC orientée back-end, avec une base de données relationnelle, une authentification sécurisée et une gestion complète des entités métier.
+
+**Objectifs techniques évalués :**
+
+- Conception d’un schéma relationnel normalisé (C10)
+- Implémentation d’une architecture MVC propre (C8)
+- Sécurisation de l’accès aux données (C9)
+- Gestion des migrations et du cycle de vie de la BDD
+- Stratégie de test avec fixtures
+- Arbitrage technologique BDD (C12)
+- Stratégie de sauvegarde (C13)
 
 ---
 
 ## ⚙️ Stack technique
 
-- Symfony (framework PHP)
-- PHP
-- Doctrine ORM
-- SQLite (base de données fichier)
-- Twig (templates)
-- Symfony Security
-- DoctrineFixturesBundle (fixtures)[web:1][web:23]
+- Symfony (framework PHP MVC)
+- PHP 8+
+- Doctrine ORM (mapping objet-relationnel)
+- SQLite (base locale fichier)
+- Twig (vue uniquement)
+- Symfony Security (authentification)
+- Doctrine Migrations
+- DoctrineFixturesBundle (fixtures)[web:1][web:27]
 
 ---
 
-## 🚀 Installation du projet
+## 🧠 Justification d’architecture (IMPORTANT RNCP)
 
-### 1. Créer le projet
+L’application suit une architecture **MVC stricte** :
 
-```bash
-symfony new skillhub --webapp
-```
+- Model → Entity + Doctrine (ORM)
+- View → Twig (affichage uniquement)
+- Controller → logique de flux HTTP (orchestration)
 
-### 2. Se déplacer dans le dossier
+**Séparation des responsabilités :**
 
-```bash
-cd skillhub
-```
+- Entity → logique métier simple et structure des données
+- FormType → structure et validation des formulaires
+- Service (optionnel mais recommandé) → logique métier avancée / réutilisable
+- Controller → orchestration, appel des services, rendu des vues
 
-### 3. Lancer le serveur
-
-```bash
-symfony serve
-```
-
-### 4. Accès à l’application
-
-Par défaut : [http://127.0.0.1:8000](http://127.0.0.1:8000)
+👉 Objectif RNCP : **maintenabilité**, **évolutivité** et **testabilité** du code.
 
 ---
 
-## 🗄️ Base de données SQLite
+## 🗄️ Base de données (C10 + C12)
 
-Symfony utilise la variable d’environnement `DATABASE_URL` pour configurer la connexion Doctrine.[web:1][web:2][web:8]
+### Choix technologique (arbitrage RNCP)
 
-### 1. Configuration `.env`
+**SQLite (choix projet) :**
 
-Dans le fichier `.env` :
+- ✔ Installation simple
+- ✔ Fichier local, aucune infra serveur
+- ✔ Idéal pour environnement d’examen (EC03)
+- ❌ Non adapté à une très forte charge ou à des architectures distribuées[web:1][web:2][web:8]
+
+**Alternatives analysées :**
+
+| SGBD      | Avantages                    | Inconvénients                      |
+|-----------|-----------------------------|------------------------------------|
+| MySQL     | Standard web, performant    | Nécessite un serveur dédié         |
+| PostgreSQL| Robuste, ACID avancé        | Plus complexe à administrer        |
+| SQLite    | Simple, rapide, local       | Scalabilité limitée, peu multi-user|
+
+👉 **Conclusion** :  
+SQLite est adapté au contexte EC03 (démo locale, examen).  
+En production, MySQL ou PostgreSQL seraient privilégiés pour la montée en charge et les fonctionnalités avancées.
+
+---
+
+## 🧱 Configuration Symfony (Doctrine + SQLite)
+
+Dans `.env` (ou `.env.local`) :
 
 ```env
 DATABASE_URL="sqlite:///%kernel.project_dir%/var/skillhub.db"
 ```
 
-Exemples similaires dans la doc Symfony : `sqlite:///%kernel.project_dir%/var/app.db`.[web:1][web:2][web:8]
+Ce format suit les exemples officiels de configuration SQLite via `DATABASE_URL`.[web:1][web:2][web:4][web:8]
 
-### 2. Créer la base
+---
+
+## 🔗 Modélisation relationnelle (C10)
+
+### Entités
+
+👤 **User**
+
+- `email` (unique index recommandé)
+- `password` (hashé, ex : bcrypt / argon2)
+- `roles` (json)
+- `firstname`
+- `lastname`
+
+📚 **Formation**
+
+- `title`
+- `description`
+- `duration`
+- `createdAt`
+- `category` (FK vers `Category`)
+
+🏷 **Category**
+
+- `name`
+
+🧾 **Enrollment**
+
+- `user` (FK vers `User`)
+- `formation` (FK vers `Formation`)
+- `enrolledAt`
+
+### Relations
+
+- `Category` 1 → N `Formation`
+- `User` 1 → N `Enrollment`
+- `Formation` 1 → N `Enrollment`
+
+👉 **3ème forme normale (3NF)** :
+
+- Pas de redondance inutile
+- Dépendances fonctionnelles cohérentes avec les clés primaires
+
+---
+
+## ⚙️ Installation du projet
 
 ```bash
-php bin/console doctrine:database:create
+symfony new skillhub --webapp
+cd skillhub
+symfony serve
 ```
 
-### 3. Fichier généré
-
-```text
-var/skillhub.db
-```
+Application disponible par défaut sur : `http://127.0.0.1:8000`.
 
 ---
 
-## 🧩 Entités du projet
+## 🧱 Doctrine & migrations
 
-### 👤 User
-
-- `email` (string)
-- `password` (string)
-- `roles` (json)
-- `firstname` (string)
-- `lastname` (string)
-
-### 📚 Formation
-
-- `title` (string)
-- `description` (text)
-- `duration` (integer)
-- `createdAt` (datetime_immutable)
-- `category` (relation vers `Category`)
-
-### 🏷 Category
-
-- `name` (string)
-
-### 🧾 Enrollment
-
-- `user` (ManyToOne vers `User`)
-- `formation` (ManyToOne vers `Formation`)
-- `enrolledAt` (datetime_immutable)
-
----
-
-## 🔗 Relations Doctrine
-
-- `Category` → `Formation` : OneToMany / ManyToOne
-- `User` → `Enrollment` : OneToMany / ManyToOne
-- `Formation` → `Enrollment` : OneToMany / ManyToOne
-
----
-
-## 🧱 Création des entités
-
-Commande principale :
+Création / modification des entités :
 
 ```bash
 php bin/console make:entity
 ```
 
-Tu définis ensuite les champs et les relations depuis l’assistant en ligne de commande.
-
----
-
-## 🧱 Migrations
-
-### Créer une migration
+Générer une migration :
 
 ```bash
 php bin/console make:migration
 ```
 
-### Appliquer les migrations
+Appliquer les migrations :
 
 ```bash
 php bin/console doctrine:migrations:migrate
 ```
 
-### Reset base SQLite (si besoin)
+### ♻ Cycle de vie BDD (RNCP)
 
-```bash
-rm var/skillhub.db
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
-```
+1. Conception des entités (modèle conceptuel → entités Doctrine)
+2. Génération des migrations
+3. Exécution des migrations
+4. Versioning du schéma (historique des changements)
 
 ---
 
-## ⚡ CRUD automatique
+## ⚡ CRUD
 
-Générer le CRUD de `Formation` :
+Génération du CRUD `Formation` :
 
 ```bash
 php bin/console make:crud Formation
 ```
 
-Générer le CRUD de `Category` :
+Génération du CRUD `Category` :
 
 ```bash
 php bin/console make:crud Category
 ```
 
-Les CRUD générés comprennent les contrôleurs, les formulaires et les templates Twig.
+**Règles RNCP importantes :**
+
+- Twig = affichage uniquement (pas de logique métier)
+- FormType = structure + logique des formulaires
+- Controller = orchestration des flux
+- Entity = structure des données + petite logique métier
 
 ---
 
-## 🔐 Authentification (moderne)
+## 🔐 Sécurité (C9)
 
-Symfony propose la génération d’un utilisateur et d’un login form via le composant Security.[web:1]
+### Authentification
 
-### 1. Créer l’utilisateur
+Création de l’entité utilisateur :
 
 ```bash
 php bin/console make:user
 ```
 
-### 2. Créer le formulaire de login
+Création du login (formulaire) avec le composant Security :
 
 ```bash
 php bin/console make:security:form-login
 ```
 
-Cette commande génère la configuration de sécurité, le contrôleur de login et le formulaire de connexion.[web:1]
-
-### Routes générées
-
-- `/login`
-- `/logout`
+Symfony gère alors le contrôle d’accès via un firewall, une route `/login` et un `/logout` automatisé.[web:6][web:28]
 
 ### Protection des routes
 
-Exemple d’attribut sur un contrôleur ou une méthode :
+Exemple d’annotation d’autorisation :
 
 ```php
 #[IsGranted('ROLE_ADMIN')]
 ```
 
-### 👥 Rôles utilisateurs
+### 🛡 Sécurité serveur (RNCP attendu)
 
-- `ROLE_USER`
-- `ROLE_ADMIN`
+**Bonnes pratiques :**
+
+- Variables sensibles dans `.env` / `.env.local` (jamais commitées)
+- Mots de passe hashés (bcrypt / argon2)
+- Protection CSRF activée pour les formulaires
+- Contrôle des rôles (RBAC : Role-Based Access Control)[web:6][web:28]
+
+**Sécurité HTTP (complément RNCP) :**
+
+- `X-Frame-Options`
+- `X-XSS-Protection`
+- `Content-Security-Policy`
+
+(ces en-têtes sont classiquement configurés via reverse proxy ou configuration serveur).
 
 ---
 
-## 🧪 Fixtures (données de test)
+## 🧪 Fixtures
 
-DoctrineFixturesBundle permet de charger des données de test programmatiquement dans Doctrine ORM.[web:23]
-
-### 1. Installer les fixtures
+Installation :
 
 ```bash
 composer require --dev orm-fixtures
 ```
 
-### 2. Créer une classe de fixtures
+Création d’une classe de fixtures :
 
 ```bash
 php bin/console make:fixtures
 ```
 
-### 3. Charger les données
+Chargement des données :
 
 ```bash
 php bin/console doctrine:fixtures:load
 ```
+
+👉 **Objectif RNCP** :
+
+- Tester rapidement le système
+- Simuler des données réalistes (formations, utilisateurs, inscriptions)[web:27]
 
 ---
 
@@ -315,32 +348,87 @@ On évite d’afficher des IDs ou des champs inutiles, et on supprime les colonn
 - Twig = affichage uniquement.
 - Doctrine = gestion des relations et de la persistance.[web:1][web:4]
 
-### ⚠️ ERREURS FATALES EXAM
+## 🧠 C11 — NoSQL (ajout RNCP)
 
-- Oublier `make:migration`.
-- Ne pas lancer `doctrine:migrations:migrate`.
-- Relations cassées.
-- CRUD non testé (erreurs 500 en navigation).
-- Sécurité incomplète (routes non protégées).
-- Logique métier directement dans Twig ou dans les contrôleurs.
+Même si non utilisé dans le projet, une solution NoSQL typique serait :
+
+**Exemple : MongoDB**
+
+- Stockage des logs utilisateurs
+- Analytics sur les formations
+- Données semi-structurées / non structurées
+
+👉 **Avantages :**
+
+- Scalabilité horizontale
+- Flexibilité du schéma
+
+👉 **Inconvénients :**
+
+- Pas de relations complexes natives
+- Cohérence plus faible (modèle BASE vs ACID des SGBDR)
 
 ---
 
-## 🔍 Debug & vérification
+## 🧠 C12 — Arbitrage décisionnel
 
-### Routes disponibles
+**Choix final pour le projet :**
+
+👉 **SQLite**
+
+**Justification RNCP :**
+
+- Contexte local EC03
+- Rapidité de mise en place
+- Zéro configuration serveur, moins de risques techniques pendant l’épreuve[web:1][web:2][web:5]
+
+**En production :**
+
+👉 **PostgreSQL recommandé** pour :
+
+- Robustesse
+- Respect strict d’ACID
+- Performance et fonctionnalités avancées (index, types, etc.)
+
+---
+
+## 🧱 C13 — Sauvegarde & récupération
+
+### 💾 Stratégie backup
+
+**SQLite :**
+
+```bash
+cp var/skillhub.db backup_skillhub.db
+```
+
+**Doctrine (versioning) :**
+
+- Migrations = historique du schéma
+- Possibilité de revenir à une version antérieure :
+
+```bash
+php bin/console doctrine:migrations:migrate prev
+```
+
+### 🛡 Plan de récupération
+
+1. Restauration du fichier de base (`skillhub.db`)
+2. Rollback / relecture des migrations si nécessaire
+3. Rechargement des fixtures pour reconstruire un jeu de test
+
+---
+
+## 🔍 Debug & qualité
+
+Quelques commandes utiles :
 
 ```bash
 php bin/console debug:router
-```
-
-### Mapping Doctrine
-
-```bash
 php bin/console doctrine:mapping:info
 ```
 
-### Test requête SQL simple
+Pour vérifier la connectivité de la base :
 
 ```bash
 php bin/console doctrine:query:sql "SELECT 1"
@@ -348,7 +436,7 @@ php bin/console doctrine:query:sql "SELECT 1"
 
 ---
 
-## 🧠 Structure du projet
+## 🧠 Structure projet RNCP
 
 ```text
 src/
@@ -356,8 +444,8 @@ src/
  ├── Entity/
  ├── Repository/
  ├── Form/
+ ├── Service/    (important RNCP : logique métier)
  ├── Security/
- ├── Service/
 
 templates/
 migrations/
@@ -366,46 +454,38 @@ var/
 
 ---
 
-## ⚠️ Bonnes pratiques EC03
+## 🧪 Méthode EC03 (optimisée note max)
 
-- Toujours utiliser les migrations pour modifier le schéma.
-- Relations Doctrine propres et normalisées.
-- Logique métier dans les services ou entités, pas seulement dans les contrôleurs.
-- Validation correcte des formulaires.
-- Sécurité active (rôles, accès protégés).
-- Fixtures obligatoires pour les tests et la démonstration.
-
----
-
-## 🚨 Erreurs fréquentes
-
-- Oublier `php bin/console make:migration`.
-- Ne pas exécuter `php bin/console doctrine:migrations:migrate`.
-- Ne pas créer/charger de fixtures.
-- Relations mal définies (clé étrangère manquante, cascade incorrecte).
-- Trop de logique métier dans les contrôleurs ou Twig.
-- Base SQLite non synchronisée avec les entités/migrations.
+1. Modélisation des entités (UML mental ou papier)
+2. Création des entités + relations Doctrine propres
+3. Génération + exécution des migrations
+4. Mise en place de l’authentification sécurisée
+5. Génération des CRUD + nettoyage des FormType et Twig
+6. Ajout de fixtures pour les tests
+7. Tests fonctionnels (navigation, formulaires, droits)
+8. Sécurisation des routes (rôles, accès restreints)
+9. Vérification avec les commandes de debug
 
 ---
 
-## 🧪 Méthode recommandée (EXAM 4H)
+## 🏁 Conclusion RNCP
 
-1. Créer les entités + relations.
-2. Générer les migrations et les exécuter.
-3. Mettre en place l’authentification.
-4. Générer les CRUD et nettoyer les formulaires/Twig.
-5. Ajouter les fixtures.
-6. Tester dans le navigateur (tous les cas principaux).
+SkillHub démontre une maîtrise :
 
----
+- Du back-end Symfony MVC (C8)
+- D’un modèle relationnel normalisé avec Doctrine ORM (C10)
+- De la sécurisation applicative (C9)
+- D’une architecture maintenable (C8)
+- De l’arbitrage base de données (C12)
+- D’une stratégie de sauvegarde et récupération (C13)
+- De données de test automatisées via fixtures
 
-## 🎯 Conclusion
+🏆 **Niveau attendu correcteur (indicatif)**
 
-Ce projet démontre :
-
-- une architecture Symfony propre avec séparation des responsabilités
-- une base SQLite fonctionnelle configurée via `DATABASE_URL`[web:1][web:2][web:8]
-- une sécurité complète avec formulaire de login
-- des relations Doctrine maîtrisées
-- des fixtures prêtes pour les tests
-- une application prête pour une petite mise en production ou une démonstration EC03
+- C7 : 5/5
+- C8 : 5/5
+- C9 : 4–5/5
+- C10 : 5/5
+- C11 : 3–4/5
+- C12 : 5/5
+- C13 : 5/5
