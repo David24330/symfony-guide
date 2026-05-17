@@ -1,30 +1,33 @@
-# SkillHub — EC03 Back-end Symfony (SQLite)
+# 📘 SkillHub — EC03 Back-end Symfony (SQLite)
 
-## Présentation
+## 🎯 Objectif du projet
 
-SkillHub est un projet back-end Symfony réalisé pour l'épreuve EC03. Il permet de gérer des utilisateurs, des formations, des catégories, des inscriptions, l'authentification et une base de données SQLite locale.
+SkillHub est une application back-end Symfony développée dans le cadre de l’épreuve EC03.  
+Elle permet de gérer :
 
-## Fonctionnalités
+- des utilisateurs
+- des formations
+- des catégories
+- des inscriptions
+- une authentification sécurisée
+- une base SQLite locale
+- des données de test (fixtures)
 
-- Gestion des utilisateurs
-- Gestion des formations
-- Gestion des catégories
-- Gestion des inscriptions
-- Authentification sécurisée
-- Base SQLite locale
-- Données de test avec fixtures
+---
 
-## Stack technique
+## ⚙️ Stack technique
 
-- Symfony
+- Symfony (framework PHP)
 - PHP
 - Doctrine ORM
-- SQLite
-- Twig
+- SQLite (base de données fichier)
+- Twig (templates)
 - Symfony Security
-- Doctrine Fixtures Bundle
+- DoctrineFixturesBundle (fixtures)[web:1][web:23]
 
-## Installation
+---
+
+## 🚀 Installation du projet
 
 ### 1. Créer le projet
 
@@ -32,7 +35,7 @@ SkillHub est un projet back-end Symfony réalisé pour l'épreuve EC03. Il perme
 symfony new skillhub --webapp
 ```
 
-### 2. Entrer dans le dossier
+### 2. Se déplacer dans le dossier
 
 ```bash
 cd skillhub
@@ -44,13 +47,17 @@ cd skillhub
 symfony serve
 ```
 
-### 4. Ouvrir l'application
+### 4. Accès à l’application
 
-Par défaut, l'application est accessible sur `http://127.0.0.1:8000`.
+Par défaut : [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
-## Configuration SQLite
+---
 
-Symfony configure la connexion via la variable d'environnement `DATABASE_URL`, et un format SQLite valide est par exemple `sqlite:///%kernel.project_dir%/var/skillhub.db`.[1][2]
+## 🗄️ Base de données SQLite
+
+Symfony utilise la variable d’environnement `DATABASE_URL` pour configurer la connexion Doctrine.[web:1][web:2][web:8]
+
+### 1. Configuration `.env`
 
 Dans le fichier `.env` :
 
@@ -58,75 +65,87 @@ Dans le fichier `.env` :
 DATABASE_URL="sqlite:///%kernel.project_dir%/var/skillhub.db"
 ```
 
-Créer ensuite la base :
+Exemples similaires dans la doc Symfony : `sqlite:///%kernel.project_dir%/var/app.db`.[web:1][web:2][web:8]
+
+### 2. Créer la base
 
 ```bash
 php bin/console doctrine:database:create
 ```
 
-Le fichier généré sera :
+### 3. Fichier généré
 
 ```text
 var/skillhub.db
 ```
 
-## Entités du projet
+---
 
-### User
+## 🧩 Entités du projet
 
-- `email` : string
-- `password` : string
-- `roles` : json
-- `firstname` : string
-- `lastname` : string
+### 👤 User
 
-### Formation
+- `email` (string)
+- `password` (string)
+- `roles` (json)
+- `firstname` (string)
+- `lastname` (string)
 
-- `title` : string
-- `description` : text
-- `duration` : integer
-- `createdAt` : datetime immutable
-- `category` : relation vers `Category`
+### 📚 Formation
 
-### Category
+- `title` (string)
+- `description` (text)
+- `duration` (integer)
+- `createdAt` (datetime_immutable)
+- `category` (relation vers `Category`)
 
-- `name` : string
+### 🏷 Category
 
-### Enrollment
+- `name` (string)
 
-- `user` : relation ManyToOne vers `User`
-- `formation` : relation ManyToOne vers `Formation`
-- `enrolledAt` : datetime immutable
+### 🧾 Enrollment
 
-## Relations Doctrine
+- `user` (ManyToOne vers `User`)
+- `formation` (ManyToOne vers `Formation`)
+- `enrolledAt` (datetime_immutable)
+
+---
+
+## 🔗 Relations Doctrine
 
 - `Category` → `Formation` : OneToMany / ManyToOne
 - `User` → `Enrollment` : OneToMany / ManyToOne
 - `Formation` → `Enrollment` : OneToMany / ManyToOne
 
-## Création des entités
+---
 
-Pour générer une entité :
+## 🧱 Création des entités
+
+Commande principale :
 
 ```bash
 php bin/console make:entity
 ```
 
-## Migrations
+Tu définis ensuite les champs et les relations depuis l’assistant en ligne de commande.
 
-Créer une migration :
+---
+
+## 🧱 Migrations
+
+### Créer une migration
 
 ```bash
 php bin/console make:migration
 ```
 
-Appliquer les migrations :
+### Appliquer les migrations
 
 ```bash
 php bin/console doctrine:migrations:migrate
 ```
 
-Réinitialiser la base SQLite si nécessaire :
+### Reset base SQLite (si besoin)
 
 ```bash
 rm var/skillhub.db
@@ -134,7 +153,9 @@ php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 ```
 
-## CRUD automatique
+---
+
+## ⚡ CRUD automatique
 
 Générer le CRUD de `Formation` :
 
@@ -148,123 +169,243 @@ Générer le CRUD de `Category` :
 php bin/console make:crud Category
 ```
 
-## Authentification
+Les CRUD générés comprennent les contrôleurs, les formulaires et les templates Twig.
 
-Symfony fournit la commande `php bin/console make:security:form-login` pour générer un formulaire de connexion moderne ainsi que la configuration de sécurité associée.[3]
+---
 
-Créer l'utilisateur :
+## 🔐 Authentification (moderne)
+
+Symfony propose la génération d’un utilisateur et d’un login form via le composant Security.[web:1]
+
+### 1. Créer l’utilisateur
 
 ```bash
 php bin/console make:user
 ```
 
-Créer l'authentification :
+### 2. Créer le formulaire de login
 
 ```bash
 php bin/console make:security:form-login
 ```
 
-Routes habituelles :
+Cette commande génère la configuration de sécurité, le contrôleur de login et le formulaire de connexion.[web:1]
+
+### Routes générées
 
 - `/login`
 - `/logout`
 
-Protéger une route ou un contrôleur :
+### Protection des routes
+
+Exemple d’attribut sur un contrôleur ou une méthode :
 
 ```php
 #[IsGranted('ROLE_ADMIN')]
 ```
 
-## Rôles
+### 👥 Rôles utilisateurs
 
 - `ROLE_USER`
 - `ROLE_ADMIN`
 
-## Fixtures
+---
 
-DoctrineFixturesBundle sert à charger des données de test dans Symfony.[4]
+## 🧪 Fixtures (données de test)
 
-Installer les fixtures :
+DoctrineFixturesBundle permet de charger des données de test programmatiquement dans Doctrine ORM.[web:23]
+
+### 1. Installer les fixtures
 
 ```bash
 composer require --dev orm-fixtures
 ```
 
-Créer une fixture :
+### 2. Créer une classe de fixtures
 
 ```bash
 php bin/console make:fixtures
 ```
 
-Charger les données :
+### 3. Charger les données
 
 ```bash
 php bin/console doctrine:fixtures:load
 ```
 
-## Debug utile
+---
 
-Lister les routes :
+## 🧠 CRUD & FORM — IMPORTANT (EXAM EC03)
+
+### ❌ Erreurs fréquentes dans un CRUD généré
+
+- `createdAt` affiché dans le formulaire.
+- `ID` affiché dans un dropdown.
+- Logique métier dans Twig.
+- Formulaires non nettoyés.
+
+### 🧾 1. Cacher `createdAt` correctement
+
+Mauvaise pratique : supprimer uniquement le champ dans Twig (le formulaire contient toujours le champ).  
+Bonne pratique : ne pas inclure `createdAt` dans le `FormType`.
+
+```php
+// src/Form/FormationType.php
+public function buildForm(FormBuilderInterface $builder, array $options): void
+{
+    $builder
+        ->add('title')
+        ->add('description')
+        ->add('duration')
+        ->add('category');
+        // createdAt NON présent
+}
+```
+
+Bonus propre côté entity :
+
+```php
+public function __construct()
+{
+    $this->createdAt = new \DateTimeImmutable();
+}
+```
+
+### 🏷️ 2. Afficher les noms dans les dropdowns
+
+Si le dropdown affiche des IDs, il faut fournir un label lisible. Symfony permet d’utiliser `choice_label` dans `EntityType`, et en l’absence de réglage explicite il repose sur `__toString()` pour convertir l’objet en texte.[web:19][web:22]
+
+Solution recommandée :
+
+```php
+// src/Entity/Category.php
+public function __toString(): string
+{
+    return $this->name;
+}
+```
+
+Alternative dans le formulaire :
+
+```php
+->add('category', EntityType::class, [
+    'class' => Category::class,
+    'choice_label' => 'name'
+])
+```
+
+### 🎨 3. Modification Twig CRUD
+
+Twig doit gérer uniquement l’affichage, tandis que la logique d’accès aux données est portée par Doctrine et la logique métier par les services/entités.[web:18][web:21]
+
+Exemple propre dans `index.html.twig` :
+
+```twig
+<td>{{ formation.title }}</td>
+<td>{{ formation.duration }}</td>
+<td>{{ formation.category.name }}</td>
+```
+
+On évite d’afficher des IDs ou des champs inutiles, et on supprime les colonnes comme `createdAt` si elles ne sont pas nécessaires à l’affichage.
+
+### 🧠 RÈGLES IMPORTANTES
+
+- FormType = logique des formulaires.
+- Entity = logique métier.
+- Twig = affichage uniquement.
+- Doctrine = gestion des relations et de la persistance.[web:1][web:4]
+
+### ⚠️ ERREURS FATALES EXAM
+
+- Oublier `make:migration`.
+- Ne pas lancer `doctrine:migrations:migrate`.
+- Relations cassées.
+- CRUD non testé (erreurs 500 en navigation).
+- Sécurité incomplète (routes non protégées).
+- Logique métier directement dans Twig ou dans les contrôleurs.
+
+---
+
+## 🔍 Debug & vérification
+
+### Routes disponibles
 
 ```bash
 php bin/console debug:router
 ```
 
-Vérifier le mapping Doctrine :
+### Mapping Doctrine
 
 ```bash
 php bin/console doctrine:mapping:info
 ```
 
-Tester une requête SQL simple :
+### Test requête SQL simple
 
 ```bash
 php bin/console doctrine:query:sql "SELECT 1"
 ```
 
-## Arborescence conseillée
+---
+
+## 🧠 Structure du projet
 
 ```text
 src/
-├── Controller/
-├── Entity/
-├── Repository/
-├── Form/
-├── Security/
-├── Service/
+ ├── Controller/
+ ├── Entity/
+ ├── Repository/
+ ├── Form/
+ ├── Security/
+ ├── Service/
 
 templates/
 migrations/
 var/
 ```
 
-## Bonnes pratiques EC03
+---
 
-- Utiliser les migrations à chaque modification de structure
-- Définir des relations Doctrine propres et cohérentes
-- Mettre la logique métier dans des services quand c'est pertinent
-- Valider les formulaires
-- Activer la sécurité par rôles
-- Prévoir des fixtures pour les démonstrations et les tests
+## ⚠️ Bonnes pratiques EC03
 
-## Erreurs fréquentes
+- Toujours utiliser les migrations pour modifier le schéma.
+- Relations Doctrine propres et normalisées.
+- Logique métier dans les services ou entités, pas seulement dans les contrôleurs.
+- Validation correcte des formulaires.
+- Sécurité active (rôles, accès protégés).
+- Fixtures obligatoires pour les tests et la démonstration.
 
-- Oublier `make:migration`
-- Ne pas lancer `doctrine:migrations:migrate`
-- Oublier les fixtures
-- Mal définir les relations
-- Mettre trop de logique métier dans les contrôleurs
-- Laisser la base SQLite désynchronisée
+---
 
-## Méthode recommandée pendant l'examen
+## 🚨 Erreurs fréquentes
 
-1. Créer les entités et les relations
-2. Générer les migrations
-3. Mettre en place l'authentification
-4. Générer les CRUD
-5. Ajouter les fixtures
-6. Vérifier le comportement dans le navigateur
+- Oublier `php bin/console make:migration`.
+- Ne pas exécuter `php bin/console doctrine:migrations:migrate`.
+- Ne pas créer/charger de fixtures.
+- Relations mal définies (clé étrangère manquante, cascade incorrecte).
+- Trop de logique métier dans les contrôleurs ou Twig.
+- Base SQLite non synchronisée avec les entités/migrations.
 
-## Objectif démontré
+---
 
-Ce projet montre une architecture Symfony claire, une base SQLite locale, une authentification fonctionnelle, des relations Doctrine maîtrisées et une base exploitable pour une application légère.
+## 🧪 Méthode recommandée (EXAM 4H)
+
+1. Créer les entités + relations.
+2. Générer les migrations et les exécuter.
+3. Mettre en place l’authentification.
+4. Générer les CRUD et nettoyer les formulaires/Twig.
+5. Ajouter les fixtures.
+6. Tester dans le navigateur (tous les cas principaux).
+
+---
+
+## 🎯 Conclusion
+
+Ce projet démontre :
+
+- une architecture Symfony propre avec séparation des responsabilités
+- une base SQLite fonctionnelle configurée via `DATABASE_URL`[web:1][web:2][web:8]
+- une sécurité complète avec formulaire de login
+- des relations Doctrine maîtrisées
+- des fixtures prêtes pour les tests
+- une application prête pour une petite mise en production ou une démonstration EC03
